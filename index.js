@@ -4,7 +4,7 @@ const TOKEN = '700255579:AAE1L52siWh_vO6qzRVE2o4xMafFASfeX58'
 const ADMIN = [550124331, 640286063]
 
 
-bot = new TelegramBot(TOKEN, {
+const bot = new TelegramBot(TOKEN, {
     polling: true
 });
 
@@ -14,14 +14,24 @@ var text
 var temp
 var html1, html2
 
-console.log('Bot has been started')
+console.log('QORA TARIX has been started')
 bot.on('polling_error', (err) => console.log(err))
 bot.onText(/\/start/, (start) => {
     if (start.from.id == ADMIN[0] || start.from.id == ADMIN[1]) {
         bot.sendMessage(start.chat.id, 'CHOOSE CHANNEL', {
             reply_markup: {
-                keyboard: [
-                    ['BILASIZMI?','QORA TARIX']
+                inline_keyboard: 
+                [
+                    [
+                        {
+                            text: 'BILASIZMI?',
+                            callback_data: 'bilasizmi'
+                        },
+                        {
+                            text: 'QORA TARIX',
+                            callback_data: 'tarix'
+                        }
+                    ]
                 ]
             }
         })
@@ -31,57 +41,37 @@ bot.onText(/\/start/, (start) => {
     }    
 })
 
-bot.on('text', (check) => { 
-    temp = check.text
-    switch (temp) {
-        case 'BILASIZMI?':
-            channel = -1001261271043
-            linkText = 'BILASIZMI?'
-            link = 'https://t.me/joinchat/AAAAAEsteANyfWvQJigWSg'
-            
+bot.on('callback_query', (query) => {
+    const {chat, message_id, text} = query.message
+    switch (query.data) {
+        case 'bilasizmi':
+            bot.sendMessage(chat.id, 'Send me a post for BILASIZMI?')
+            bot.on('photo', (postB) => {
+                bot.sendPhoto(-1001261271043, postB.photo[0].file_id, {
+                    caption: `
+<b>${postB.caption}</b>
+    
+<a href="https://t.me/joinchat/AAAAAEsteANyfWvQJigWSg">BILASIZMI?</a>
+                    `, 
+                    parse_mode: 'HTML'
+                })
+                console.log(postB.caption)
+            })
             break;
-        case 'QORA TARIX':
-            channel = -1001323413000
-            linkText = 'TARIXIY'
-            link = 'https://t.me/joinchat/AAAAAE7hrgjQ0IFCNwRlkg'
-            break
+        case 'tarix':
+            bot.sendMessage(chat.id, 'Send me a post for QORA TARIX')
+            bot.on('photo', (postT) => {
+                bot.sendPhoto(-1001323413000, postT.photo[0].file_id,  {
+                    caption: `
+<a href="https://t.me/joinchat/AAAAAE7hrgjQ0IFCNwRlkg">TARIXIY</a>   
+<b>${postT.caption}</b>
+                    `,
+                    parse_mode: 'HTML'
+                })
+                console.log(postT.caption)
+            })
         default:
-            channel = -1001439300684
+            bot.sendMessage(chat.id, 'Send me only PHOTO')
             break;
-    }
-})
-
-
-bot.on('photo', (p) => {
-    text = p.caption
-
-    html1 = `
-<a href="${link}">${linkText}</a>   
-<b>${text}</b>
-    `
-    html2 = `
-<b>${text}</b>
-
-<a href="${link}">${linkText}</a>
-    `
-
-    switch (temp) {
-        case 'BILASIZMI?':
-            html = html2
-            break;
-        case 'QORA TARIX':
-            html = html1
-        default:
-            break;
-    }
-
-    if (p.from.id == ADMIN[0] || p.from.id == ADMIN[1]) {
-        bot.sendPhoto(channel, `${p.photo[0].file_id}`, {
-            caption: html,
-            parse_mode:'HTML'
-        })
-    }
-    else {
-        bot.sendMessage(p.chat.id, 'YOU ARE NOT ADMIN!!!')
     }
 })
